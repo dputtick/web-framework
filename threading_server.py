@@ -34,8 +34,8 @@ class ProcessPoolServer():
             request = client.recv(100)
             if not request:
                 break
-            #request = request.decode()
-            request = int(request)
+            request = request.decode()
+            #request = int(request)
             #future = self.pool.submit(self._serve, request)
             #result = future.result()
             result = self._serve(request)
