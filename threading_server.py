@@ -1,6 +1,8 @@
 import socket as s
 from threading import Thread
 from concurrent.futures import ProcessPoolExecutor as Pool
+from concurrent.futures import ThreadPoolExecutor as ThreadPool
+from frame import handler
 
 
 SERVER_ADDRESS = ('localhost', 8080)
@@ -18,7 +20,7 @@ class ProcessPoolServer():
         self.listening_socket.listen(10)
 
     def _make_process_pool(self):
-        self.pool = Pool(2)
+        self.pool = ThreadPool(20)
 
     def run(self):
         print("Serving on: ", self.addr)
@@ -29,15 +31,19 @@ class ProcessPoolServer():
             new_thread = Thread(target=self._client_connection, args=(client, addr))
             new_thread.start()
 
+
+    def _handle_connection(self):
+        handler()
+
     def _client_connection(self, client, addr):
         while True:
             request = client.recv(100)
             if not request:
                 break
             request = request.decode()
-            #request = int(request)
-            #future = self.pool.submit(self._serve, request)
-            #result = future.result()
+            request = int(request)
+            future = self.pool.submit(self._serve, request)
+            result = future.result()
             result = self._serve(request)
             response = str(result).encode() + b'\n'
             client.send(response)
