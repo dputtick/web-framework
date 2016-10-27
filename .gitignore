@@ -1,3 +1,5 @@
+*.org
 *.html
-
+__pycache__/
 bottle.py
+py3_bottle.py
