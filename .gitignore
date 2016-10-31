@@ -1,5 +1,6 @@
 *.org
 *.html
+.python-version
 __pycache__/
 bottle.py
 py3_bottle.py
