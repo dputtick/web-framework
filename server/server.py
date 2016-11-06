@@ -1,10 +1,14 @@
+'''
+This was originally threadpool_server.py
+'''
+
 import socket as s
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor as Executor
 
 
 SERVER_ADDRESS = ('localhost', 8080)
-
+DEBUG = True
 
 class ThreadPoolServer():
     def __init__(self, addr):
@@ -20,11 +24,13 @@ class ThreadPoolServer():
 
 
     def run(self):
-        print("Serving on: ", self.addr)
+        if DEBUG:
+            print("Serving on: ", self.addr)
         self._bind_listening_socket()
         while True:
             client, addr = self.listening_socket.accept()
-            print("Client connected on: ", addr)
+            if DEBUG:
+                print("Client connected on: ", addr)
             future = self.executor.submit(self._client_connection, client, addr)
             result = future.result()
 
@@ -43,16 +49,23 @@ class ThreadPoolServer():
             if not request:
                 break
             page = self._handle_request(request)
-            print(page)
+            if DEBUG:
+                print(page)
             response = str(page).encode() + b'\n'
             client.send(response)
             client.close()
-        print("Client connection closed: ", addr)
+        if DEBUG:
+            print("Client connection closed: ", addr)
 
 
     def _serve_page(self, page):
         with open("hello.html", 'r') as f:
             return f.read()
+
+
+def serve(app, address):
+    server = ThreadPoolServer(address)
+    server.run(app)
 
 
 def main():
