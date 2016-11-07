@@ -7,7 +7,6 @@ from threading import Thread
 from concurrent.futures import ThreadPoolExecutor as Executor
 
 
-SERVER_ADDRESS = ('localhost', 8080)
 DEBUG = True
 
 class ThreadPoolServer():
@@ -16,17 +15,53 @@ class ThreadPoolServer():
         self.executor = Executor()
 
 
-    def _bind_listening_socket(self):
+    def _create_listening_socket(self):
         self.listening_socket = s.socket()
         self.listening_socket.setsockopt(s.SOL_SOCKET, s.SO_REUSEADDR, 1)
         self.listening_socket.bind(self.addr)
         self.listening_socket.listen(10)
 
 
-    def run(self):
+    def _handle_request(self, request):
+        environ = self._make_environ(request)
+        self.app(environ, start_response)
+
+
+    def _client_connection(self, client, addr):
+        while True:
+            request = client.recv(1024)
+            if not request:
+                break
+            self._handle_request(request)
+            response = str(page).encode() + b'\n'
+            client.send(response)
+            client.close()
         if DEBUG:
-            print("Serving on: ", self.addr)
-        self._bind_listening_socket()
+            print("Client connection closed: ", addr)
+
+
+    def _make_environ(self, request):
+        request = request.decode('utf-8')
+        environ = None
+        request_list = request.split("\r\n")[0].split(" ")
+        request_dict = {'type': request_list[0], 'path': request_list[1]}
+        return environ
+
+    def _write_data(self, data):
+        # this is a callable that should write data
+        pass
+
+
+    def _start_response(self, status, response_headers, exc_info=None)
+        response_header = "HTTP/1.1 200 OK\r\n\r\n"
+        return self._write_data
+
+
+    def serve(self, app):
+        self.app = app
+        if DEBUG:
+            print("Serving <appname> on: ", self.addr)
+        self._create_listening_socket()
         while True:
             client, addr = self.listening_socket.accept()
             if DEBUG:
@@ -35,43 +70,6 @@ class ThreadPoolServer():
             result = future.result()
 
 
-    def _handle_request(self, request):
-        request = request.decode()
-        request_list = request.split("\r\n")[0].split(" ")
-        request_dict = {'type': request_list[0], 'path': request_list[1]}
-        response_header = "HTTP/1.1 200 OK\r\n\r\n"
-        return response_header + self._serve_page("Hello")
-
-
-    def _client_connection(self, client, addr):
-        while True:
-            request = client.recv(1024)
-            if not request:
-                break
-            page = self._handle_request(request)
-            if DEBUG:
-                print(page)
-            response = str(page).encode() + b'\n'
-            client.send(response)
-            client.close()
-        if DEBUG:
-            print("Client connection closed: ", addr)
-
-
-    def _serve_page(self, page):
-        with open("hello.html", 'r') as f:
-            return f.read()
-
-
-def serve(app, address):
+def run(app, address):
     server = ThreadPoolServer(address)
-    server.run(app)
-
-
-def main():
-    server = ThreadPoolServer(SERVER_ADDRESS)
-    server.run()
-
-
-if __name__ == '__main__':
-    main()
+    server.serve(app)

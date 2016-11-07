@@ -1,6 +1,13 @@
 SERVER = None
+DEBUG = False
+ROUTES = {}
+CACHED_ROUTES = {}
 
+## setup stuff
 
+def make_app():
+    # compile all of the routes here
+    pass
 
 
 def choose_server(servername = ""):
@@ -15,11 +22,19 @@ def use_default_server():
         raise RuntimeError
     return threadpool_server
 
+## handling stuff
+
+def request_handler(environ, start_response)
+    pass
+
+
+def response_generator()
+    pass
+
 
 def run(ip='localhost', port='8080'):
     address = (ip, port)
     if not SERVER:
         use_default_server()
     server = SERVER
-    app = make_app()
-    server.serve(app, address)
+    server.run(request_handler, address)
