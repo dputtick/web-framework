@@ -5,10 +5,12 @@ This was originally threadpool_server.py
 import socket as s
 from concurrent.futures import ThreadPoolExecutor as Executor
 from urllib.parse import parse_qs, urlparse
+from http import HTTPStatus
 
 
 # Constants
 DEBUG = True
+SERVER_NAME = "Server v. 0.1"
 
 
 class ThreadPoolServer():
@@ -44,11 +46,6 @@ class ThreadPoolServer():
         request = request.decode('utf-8')
         environ = {}
         environ['REQUEST_METHOD'] = None
-
-
-
-        request_list = request.split("\r\n")[0].split(" ")
-        request_dict = {'type': request_list[0], 'path': request_list[1]}
         return environ
 
     def _write_data(self, data):
@@ -68,8 +65,8 @@ class ThreadPoolServer():
             client, addr = self.listening_socket.accept()
             if DEBUG:
                 print("Client connected on: ", addr)
-            future = self.executor.submit(self._client_connection, client, addr)
-            result = future.result()
+            fut = self.executor.submit(self._client_connection, client, addr)
+            result = fut.result()  # do I need this line? try deleting
 
 
 def run(app, address):

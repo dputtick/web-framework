@@ -27,7 +27,8 @@ def use_default_server():
 
 
 def request_handler(environ, start_response):
-    # decode the environ and figure out what we need
+    # decode the environ in some way
+    # check whether there is a route that matches
     response = response_generator()
     return [response]
 
