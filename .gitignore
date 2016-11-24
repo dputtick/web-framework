@@ -2,6 +2,8 @@
 *.html
 .python-version
 __pycache__/
+.cache/
+
 bottle.py
 py3_bottle.py
 _notworking/
